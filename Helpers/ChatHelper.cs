@@ -2,84 +2,43 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Translations;
 
-namespace AdvancedTeamBalance
+namespace AdvancedTeamBalance;
+
+public static class ChatHelper
 {
-    public static class ChatHelper
+    /// <summary>
+    /// Prints a localized message to one player. With includePrefix the plugin
+    /// tag is passed as {0} and translation arguments start at {1}.
+    /// </summary>
+    public static void PrintLocalizedChat(CCSPlayerController? player, bool includePrefix, string key, params object[] args)
     {
-        /// <summary>
-        /// Prints a localized message to the player's chat.
-        /// </summary>
-        /// <param name="player">The CCSPlayerController to print to.</param>
-        /// <param name="includePrefix">
-        /// If true, the plugin prefix (PluginTag) is included as the first argument.
-        /// Translation strings will expect {0} for the prefix.
-        /// </param>
-        /// <param name="key">The translation key (as defined in your language JSON file).</param>
-        /// <param name="args">Any additional arguments to format the string.</param>
-        public static void PrintLocalizedChat(CCSPlayerController player, bool includePrefix, string key, params object[] args)
+        if (player == null || !player.IsValid || player.IsBot || player.IsHLTV)
+            return;
+
+        var localizer = Plugin.Localization;
+        if (localizer == null)
         {
-            if (!player.IsValid)
-                return;
-
-            if (Plugin._localizer == null)
-            {
-                Console.WriteLine($"[AdvancedTeamBalance][ChatHelper] ERROR: _localizer is NULL. Key: {key}");
-                return;
-            }
-
-            var sanitizedArgs = args.Select(arg => arg).ToArray();
-
-            if (includePrefix)
-            {
-                var prefix = Plugin.Instance?.Config.General.PluginTag.ReplaceColorTags();
-                sanitizedArgs = [prefix!, .. sanitizedArgs];
-            }
-
-            try
-            {
-                var formattedMessage = Plugin._localizer.ForPlayer(player, key, sanitizedArgs);
-                player.PrintToChat(formattedMessage);
-            }
-            catch (FormatException fe)
-            {
-                Console.WriteLine($"[AdvancedTeamBalance][ChatHelper] ERROR: Formatting failed for key: {key} | Args: {string.Join(", ", sanitizedArgs)}");
-                Console.WriteLine($"[AdvancedTeamBalance][ChatHelper] Exception: {fe.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[AdvancedTeamBalance][ChatHelper] ERROR: Unexpected error for key: {key}");
-                Console.WriteLine($"[AdvancedTeamBalance][ChatHelper] Exception: {ex.Message}");
-            }
+            Log.Warning($"Localizer not ready, dropped message '{key}'");
+            return;
         }
 
-        /// <summary>
-        /// Prints a localized message to all players' chat.
-        /// </summary>
-        /// <param name="includePrefix">
-        /// If true, the plugin prefix (PluginTag) is included as the first argument.
-        /// Translation strings will expect {0} for the prefix.
-        /// </param>
-        /// <param name="key">The translation key (as defined in your language JSON file).</param>
-        /// <param name="args">Any additional arguments to format the string.</param>
-        public static void PrintLocalizedChatAll(bool includePrefix, string key, params object[] args)
+        object[] finalArgs = includePrefix
+            ? [Plugin.Instance?.Config.General.PluginTag.ReplaceColorTags() ?? string.Empty, .. args]
+            : args;
+
+        try
         {
-            if (Plugin._localizer == null)
-            {
-                Console.WriteLine($"[AdvancedTeamBalance][ChatHelper] ERROR: _localizer is NULL. Key: {key}");
-                return;
-            }
-
-            var players = Utilities.GetPlayers();
-            if (players.Count == 0)
-                return;
-
-            foreach (var player in players)
-            {
-                if (player == null || !player.IsValid)
-                    continue;
-
-                PrintLocalizedChat(player, includePrefix, key, args);
-            }
+            player.PrintToChat(localizer.ForPlayer(player, key, finalArgs));
         }
+        catch (Exception ex)
+        {
+            Log.Warning($"Failed to print translation '{key}': {ex.Message}");
+        }
+    }
+
+    public static void PrintLocalizedChatAll(bool includePrefix, string key, params object[] args)
+    {
+        foreach (var player in Utilities.GetPlayers())
+            PrintLocalizedChat(player, includePrefix, key, args);
     }
 }

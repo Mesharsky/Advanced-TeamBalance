@@ -1,18 +1,42 @@
 {
-    "jointeam.imbalance": "{0} Você {red}não pode entrar{default} nesse time, pois causaria desequilíbrio.",
-    "jointeam.suggest": "{0} Tente entrar no time {green}{1}{default} para manter o equilíbrio.",
-    "jointeam.forced": "{0} Você foi movido para o time {green}{1}{default} para manter o equilíbrio.",
-    "jointeam.delayed": "{0} Você será movido para um time equilibrado {purple}quando morrer{default}.",
-    
-    "balance.scramble.winstreak": "{0} Os times serão {gold}embaralhados{default} depois que os {green}{1}{default} venceram {lightred}{2}{default} rodadas seguidas!",
-    "balance.boost.losestreak": "{0} O time {red}{1}{default} perdeu {lightred}{2}{default} rodadas seguidas. {green}O balanceamento atribuirá melhores jogadores a eles{default} na próxima rodada.",
-    "balance.size.moved": "{0} {green}{1}{default} jogador{2} movido{2} para manter o equilíbrio numérico dos times.",
-    "balance.skill.swapped": "{0} {green}{1}{default} par{2} de jogadores trocado{2} para equilibrar os níveis de habilidade.",
-    "balance.force": "{0} {red}Desequilíbrio crítico de times detectado{default}. {green}{1}{default} jogadores foram forçados a trocar de time.",
-    
-    "scramble.random": "{0} Os times foram {gold}embaralhados aleatoriamente{default} para melhor equilíbrio!",
-    "scramble.skill": "{0} Os times foram {gold}embaralhados com base na habilidade{default} para melhor equilíbrio!",
-    
-    "player.moved.t": "{0} Você foi movido para o time {orange}Terrorista{default} para manter o equilíbrio.",
-    "player.moved.ct": "{0} Você foi movido para o time {blue}Contra-Terrorista{default} para manter o equilíbrio."
+    "jointeam.imbalance": "{0} {red}Você não pode entrar nesse time{default} agora, isso desequilibraria os times.",
+    "jointeam.already_balanced": "{0} Você já está no {green}time certo{default}.",
+    "jointeam.forced.t": "{0} Você foi colocado nos {orange}Terroristas{default} para manter os times iguais.",
+    "jointeam.forced.ct": "{0} Você foi colocado nos {blue}Contra-Terroristas{default} para manter os times iguais.",
+
+    "player.moved.t": "{0} Você foi movido para os {orange}Terroristas{default} para manter o equilíbrio.",
+    "player.moved.ct": "{0} Você foi movido para os {blue}Contra-Terroristas{default} para manter o equilíbrio.",
+
+    "balance.size.moved": "{0} {green}{1}{default} jogador(es) movido(s) para igualar os times.",
+    "balance.size.moved.reason": "{0} {green}{1}{default} jogador(es) movido(s) para igualar os times ({orange}T {2}{default} vs {blue}CT {3}{default}).",
+    "balance.skill.swapped": "{0} {green}{1}{default} dupla(s) de jogadores trocada(s) para equilibrar o nível.",
+    "balance.skill.swapped.reason": "{0} {green}{1}{default} dupla(s) de jogadores trocada(s) para equilibrar {orange}{2}{default} (diferença restante: {lightred}{3}{default}).",
+
+    "balance.boost.losestreak.t": "{0} Os {orange}Terroristas{default} perderam {lightred}{1}{default} rounds seguidos. O próximo balanceamento vai favorecê-los.",
+    "balance.boost.losestreak.ct": "{0} Os {blue}Contra-Terroristas{default} perderam {lightred}{1}{default} rounds seguidos. O próximo balanceamento vai favorecê-los.",
+
+    "scramble.queued": "{0} Os times serão {gold}embaralhados{default} no início do próximo round.",
+    "scramble.winstreak.t": "{0} Os {orange}Terroristas{default} venceram {lightred}{1}{default} rounds seguidos. Os times serão {gold}embaralhados{default} no próximo round!",
+    "scramble.winstreak.ct": "{0} Os {blue}Contra-Terroristas{default} venceram {lightred}{1}{default} rounds seguidos. Os times serão {gold}embaralhados{default} no próximo round!",
+    "scramble.halftime": "{0} Meio tempo! Os times serão {gold}embaralhados{default} no próximo round.",
+    "scramble.random": "{0} Os times foram {gold}embaralhados aleatoriamente{default}.",
+    "scramble.skill": "{0} Os times foram {gold}embaralhados por nível{default}.",
+    "scramble.already_queued": "{0} Um embaralhamento {gold}já está agendado{default} para o próximo round.",
+
+    "stats.header": "{0} {gold}=== Suas estatísticas de balanceamento ==={default}",
+    "stats.kd": "{0} K/D: {green}{1}{default}",
+    "stats.kda": "{0} KDA: {green}{1}{default}",
+    "stats.score": "{0} Pontuação: {green}{1}{default}",
+    "stats.winrate": "{0} Taxa de vitórias: {green}{1}%{default}",
+    "stats.rounds": "{0} Rounds jogados: {green}{1}{default}",
+    "stats.switches": "{0} Trocas de time: {green}{1}{default}",
+
+    "preview.header": "{0} {gold}=== Prévia do balanceamento ==={default}",
+    "preview.current": "{0} Atual: {orange}T {1}{default} (méd. {2}) vs {blue}CT {3}{default} (méd. {4})",
+    "preview.move": "{0} - {green}{1}{default}: {2}",
+    "preview.moves": "{0} Planejado: {green}{1}{default} movimento(s), {green}{2}{default} troca(s).",
+    "preview.none": "{0} Os times já estão equilibrados. Nenhuma mudança necessária.",
+
+    "command.nopermission": "{0} Você não tem permissão para usar este comando.",
+    "admin.reset.done": "{0} Estatísticas de balanceamento e sequências de vitórias zeradas."
 }

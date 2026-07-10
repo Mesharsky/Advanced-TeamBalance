@@ -1,18 +1,42 @@
 {
-    "jointeam.imbalance": "{0} Takım dengesizliğine neden olacağı için bu takıma {red}katılamazsın{default}.",
-    "jointeam.suggest": "{0} Dengeyi korumak için {green}{1}{default} takımına katılmayı dene.",
-    "jointeam.forced": "{0} Dengeyi korumak için {green}{1}{default} takımına taşındın.",
-    "jointeam.delayed": "{0} {purple}Öldüğünde{default} dengeli bir takıma taşınacaksın.",
-    
-    "balance.scramble.winstreak": "{0} {green}{1}{default} takımı art arda {lightred}{2}{default} tur kazandıktan sonra takımlar {gold}karıştırılacak{default}!",
-    "balance.boost.losestreak": "{0} {red}{1}{default} takımı art arda {lightred}{2}{default} tur kaybetti. {green}Denge sistemi bir sonraki turda onlara daha iyi oyuncular atayacak{default}.",
-    "balance.size.moved": "{0} Takım sayı dengesini korumak için {green}{1}{default} oyuncu taşındı.",
-    "balance.skill.swapped": "{0} Beceri seviyelerini dengelemek için {green}{1}{default} oyuncu çift{2} değiştirildi.",
-    "balance.force": "{0} {red}Kritik takım dengesizliği tespit edildi{default}. {green}{1}{default} oyuncu takım değiştirmeye zorlandı.",
-    
-    "scramble.random": "{0} Daha iyi denge için takımlar {gold}rastgele karıştırıldı{default}!",
-    "scramble.skill": "{0} Daha iyi denge için takımlar {gold}beceriye göre karıştırıldı{default}!",
-    
+    "jointeam.imbalance": "{0} Şu anda bu takıma {red}katılamazsın{default}, takımlar dengesiz olurdu.",
+    "jointeam.already_balanced": "{0} Zaten {green}doğru takımdasın{default}.",
+    "jointeam.forced.t": "{0} Takımları eşit tutmak için {orange}Terörist{default} takımına yerleştirildin.",
+    "jointeam.forced.ct": "{0} Takımları eşit tutmak için {blue}Anti-Terörist{default} takımına yerleştirildin.",
+
     "player.moved.t": "{0} Dengeyi korumak için {orange}Terörist{default} takımına taşındın.",
-    "player.moved.ct": "{0} Dengeyi korumak için {blue}Anti-Terörist{default} takımına taşındın."
+    "player.moved.ct": "{0} Dengeyi korumak için {blue}Anti-Terörist{default} takımına taşındın.",
+
+    "balance.size.moved": "{0} Takımları eşitlemek için {green}{1}{default} oyuncu taşındı.",
+    "balance.size.moved.reason": "{0} Takımları eşitlemek için {green}{1}{default} oyuncu taşındı ({orange}T {2}{default} vs {blue}CT {3}{default}).",
+    "balance.skill.swapped": "{0} Takım gücünü dengelemek için {green}{1}{default} oyuncu çifti takas edildi.",
+    "balance.skill.swapped.reason": "{0} {orange}{2}{default} değerini dengelemek için {green}{1}{default} oyuncu çifti takas edildi (kalan fark: {lightred}{3}{default}).",
+
+    "balance.boost.losestreak.t": "{0} {orange}Teröristler{default} üst üste {lightred}{1}{default} tur kaybetti. Bir sonraki dengeleme onları destekleyecek.",
+    "balance.boost.losestreak.ct": "{0} {blue}Anti-Teröristler{default} üst üste {lightred}{1}{default} tur kaybetti. Bir sonraki dengeleme onları destekleyecek.",
+
+    "scramble.queued": "{0} Takımlar bir sonraki turun başında {gold}karıştırılacak{default}.",
+    "scramble.winstreak.t": "{0} {orange}Teröristler{default} üst üste {lightred}{1}{default} tur kazandı. Takımlar bir sonraki turda {gold}karıştırılacak{default}!",
+    "scramble.winstreak.ct": "{0} {blue}Anti-Teröristler{default} üst üste {lightred}{1}{default} tur kazandı. Takımlar bir sonraki turda {gold}karıştırılacak{default}!",
+    "scramble.halftime": "{0} Devre arası! Takımlar bir sonraki turda {gold}karıştırılacak{default}.",
+    "scramble.random": "{0} Takımlar {gold}rastgele karıştırıldı{default}.",
+    "scramble.skill": "{0} Takımlar {gold}beceriye göre karıştırıldı{default}.",
+    "scramble.already_queued": "{0} Bir sonraki tur için karıştırma {gold}zaten planlandı{default}.",
+
+    "stats.header": "{0} {gold}=== Denge istatistiklerin ==={default}",
+    "stats.kd": "{0} K/D oranı: {green}{1}{default}",
+    "stats.kda": "{0} KDA: {green}{1}{default}",
+    "stats.score": "{0} Skor: {green}{1}{default}",
+    "stats.winrate": "{0} Kazanma oranı: {green}%{1}{default}",
+    "stats.rounds": "{0} Oynanan turlar: {green}{1}{default}",
+    "stats.switches": "{0} Takım değişikliği: {green}{1}{default}",
+
+    "preview.header": "{0} {gold}=== Denge önizlemesi ==={default}",
+    "preview.current": "{0} Mevcut: {orange}T {1}{default} (ort. {2}) vs {blue}CT {3}{default} (ort. {4})",
+    "preview.move": "{0} - {green}{1}{default}: {2}",
+    "preview.moves": "{0} Plan: {green}{1}{default} taşıma, {green}{2}{default} takas.",
+    "preview.none": "{0} Takımlar zaten dengeli. Değişiklik gerekmiyor.",
+
+    "command.nopermission": "{0} Bu komutu kullanma yetkin yok.",
+    "admin.reset.done": "{0} Denge istatistikleri ve galibiyet serileri sıfırlandı."
 }

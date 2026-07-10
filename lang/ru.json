@@ -1,18 +1,42 @@
 {
-    "jointeam.imbalance": "{0} Вы {red}не можете присоединиться{default} к этой команде, так как это нарушит баланс.",
-    "jointeam.suggest": "{0} Попробуйте присоединиться к команде {green}{1}{default} для сохранения баланса.",
-    "jointeam.forced": "{0} Вы были перемещены в команду {green}{1}{default} для поддержания баланса.",
-    "jointeam.delayed": "{0} Вы будете перемещены в сбалансированную команду {purple}после смерти{default}.",
-    
-    "balance.scramble.winstreak": "{0} Команды будут {gold}перемешаны{default} после того, как {green}{1}{default} выиграли {lightred}{2}{default} раундов подряд!",
-    "balance.boost.losestreak": "{0} Команда {red}{1}{default} проиграла {lightred}{2}{default} раундов подряд. {green}Балансировка назначит им лучших игроков{default} в следующем раунде.",
-    "balance.size.moved": "{0} Перемещено {green}{1}{default} игрок{2} для поддержания численного баланса команд.",
-    "balance.skill.swapped": "{0} Обменяно {green}{1}{default} пар{2} игроков для балансировки уровня навыков команд.",
-    "balance.force": "{0} {red}Обнаружен критический дисбаланс команд{default}. Принудительно перемещено {green}{1}{default} игроков.",
-    
-    "scramble.random": "{0} Команды были {gold}случайно перемешаны{default} для лучшего баланса!",
-    "scramble.skill": "{0} Команды были {gold}перемешаны на основе навыков{default} для лучшего баланса!",
-    
+    "jointeam.imbalance": "{0} Вы {red}не можете присоединиться к этой команде{default}, это нарушит баланс.",
+    "jointeam.already_balanced": "{0} Вы уже находитесь в {green}подходящей команде{default}.",
+    "jointeam.forced.t": "{0} Вы были направлены в команду {orange}Террористов{default}, чтобы уравнять составы.",
+    "jointeam.forced.ct": "{0} Вы были направлены в команду {blue}Контр-террористов{default}, чтобы уравнять составы.",
+
     "player.moved.t": "{0} Вы были перемещены в команду {orange}Террористов{default} для поддержания баланса.",
-    "player.moved.ct": "{0} Вы были перемещены в команду {blue}Контр-Террористов{default} для поддержания баланса."
+    "player.moved.ct": "{0} Вы были перемещены в команду {blue}Контр-террористов{default} для поддержания баланса.",
+
+    "balance.size.moved": "{0} Перемещено игроков: {green}{1}{default}, чтобы уравнять размеры команд.",
+    "balance.size.moved.reason": "{0} Перемещено игроков: {green}{1}{default}, чтобы уравнять команды ({orange}T {2}{default} против {blue}CT {3}{default}).",
+    "balance.skill.swapped": "{0} Обменяно пар игроков: {green}{1}{default}, чтобы выровнять уровень команд.",
+    "balance.skill.swapped.reason": "{0} Обменяно пар игроков: {green}{1}{default} для выравнивания {orange}{2}{default} (оставшаяся разница: {lightred}{3}{default}).",
+
+    "balance.boost.losestreak.t": "{0} {orange}Террористы{default} проиграли {lightred}{1}{default} раундов подряд. Следующая балансировка будет в их пользу.",
+    "balance.boost.losestreak.ct": "{0} {blue}Контр-террористы{default} проиграли {lightred}{1}{default} раундов подряд. Следующая балансировка будет в их пользу.",
+
+    "scramble.queued": "{0} Команды будут {gold}перемешаны{default} в начале следующего раунда.",
+    "scramble.winstreak.t": "{0} {orange}Террористы{default} выиграли {lightred}{1}{default} раундов подряд. В следующем раунде команды будут {gold}перемешаны{default}!",
+    "scramble.winstreak.ct": "{0} {blue}Контр-террористы{default} выиграли {lightred}{1}{default} раундов подряд. В следующем раунде команды будут {gold}перемешаны{default}!",
+    "scramble.halftime": "{0} Смена сторон! В следующем раунде команды будут {gold}перемешаны{default}.",
+    "scramble.random": "{0} Команды были {gold}случайно перемешаны{default}.",
+    "scramble.skill": "{0} Команды были {gold}перемешаны по уровню игры{default}.",
+    "scramble.already_queued": "{0} Перемешивание {gold}уже запланировано{default} на следующий раунд.",
+
+    "stats.header": "{0} {gold}=== Ваша статистика баланса ==={default}",
+    "stats.kd": "{0} К/Д: {green}{1}{default}",
+    "stats.kda": "{0} КДА: {green}{1}{default}",
+    "stats.score": "{0} Счёт: {green}{1}{default}",
+    "stats.winrate": "{0} Процент побед: {green}{1}%{default}",
+    "stats.rounds": "{0} Сыграно раундов: {green}{1}{default}",
+    "stats.switches": "{0} Смен команды: {green}{1}{default}",
+
+    "preview.header": "{0} {gold}=== Предпросмотр баланса ==={default}",
+    "preview.current": "{0} Сейчас: {orange}T {1}{default} (ср. {2}) против {blue}CT {3}{default} (ср. {4})",
+    "preview.move": "{0} - {green}{1}{default}: {2}",
+    "preview.moves": "{0} План: перемещений: {green}{1}{default}, обменов: {green}{2}{default}.",
+    "preview.none": "{0} Команды уже сбалансированы. Изменения не требуются.",
+
+    "command.nopermission": "{0} У вас нет прав для использования этой команды.",
+    "admin.reset.done": "{0} Статистика баланса и серии побед сброшены."
 }

@@ -1,366 +1,338 @@
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
-using CounterStrikeSharp.API.Modules.Admin;
 using Microsoft.Extensions.Localization;
-using System.Linq;
 
-namespace AdvancedTeamBalance
+namespace AdvancedTeamBalance;
+
+public sealed class Plugin : BasePlugin, IPluginConfig<PluginConfig>
 {
-    public sealed partial class Plugin : BasePlugin, IPluginConfig<PluginConfig>
+    public override string ModuleName => "Advanced Team Balance";
+    public override string ModuleAuthor => "Mesharsky";
+    public override string ModuleDescription => "Team balancing for CS2 servers";
+    public override string ModuleVersion => "6.0.0";
+
+    public PluginConfig Config { get; set; } = new();
+
+    public static Plugin? Instance { get; private set; }
+    public static IStringLocalizer? Localization { get; private set; }
+
+    public override void Load(bool hotReload)
     {
-        public override string ModuleName => "Advanced Team Balance";
-        public override string ModuleAuthor => "Mesharsky";
-        public override string ModuleDescription => "Provides advanced team balancing for CS2 servers";
-        public override string ModuleVersion => "5.2.0";
+        Instance = this;
+        Localization = Localizer;
 
-        public PluginConfig Config { get; set; } = new();
+        InitializeManagers();
+        RegisterEventHandlers();
+        RegisterCommands();
 
-        public static Plugin? Instance { get; private set; }
+        Log.Info($"Plugin loaded (version {ModuleVersion})");
+    }
 
-        public static IStringLocalizer? _localizer;
+    public override void OnAllPluginsLoaded(bool isReload)
+    {
+        Localization = Localizer;
+    }
 
-        public override void Load(bool hotReload)
+    public override void Unload(bool hotReload)
+    {
+        EventManager.ResetMatchState();
+        Instance = null;
+        Localization = null;
+    }
+
+    public void OnConfigParsed(PluginConfig config)
+    {
+        Config = config;
+        ValidateConfiguration();
+        InitializeManagers();
+    }
+
+    private void InitializeManagers()
+    {
+        Log.DebugEnabled = Config.General.EnableDebug;
+        PlayerManager.Initialize(Config);
+        BalanceManager.Initialize(Config);
+        EventManager.Initialize(Config);
+    }
+
+    private void ValidateConfiguration()
+    {
+        var general = Config.General;
+        var teamSwitch = Config.TeamSwitch;
+        var balancing = Config.Balancing;
+        var scramble = Config.Scramble;
+
+        if (general.MinimumPlayers < 0)
         {
-            Instance = this;
-
-            PlayerManager.Initialize(Config);
-            BalanceManager.Initialize(Config);
-            EventManager.Initialize(Config);
-
-            RegisterEventHandlers();
-            RegisterCommandHandlers();
-
-            Console.WriteLine("[AdvancedTeamBalance] Plugin loaded successfully!");
-
-            if (hotReload)
-            {
-                PlayerManager.Initialize(Config);
-                BalanceManager.Initialize(Config);
-                EventManager.Initialize(Config);
-                 Console.WriteLine("[AdvancedTeamBalance] Hot reload: Managers re-initialized.");
-            }
+            Log.Warning("MinimumPlayers cannot be negative, using 0");
+            general.MinimumPlayers = 0;
         }
 
-        public override void OnAllPluginsLoaded(bool isReload)
+        if (teamSwitch.MaxTeamSizeDifference < 0)
         {
-            _localizer = Localizer;
+            Log.Warning("MaxTeamSizeDifference cannot be negative, using 1");
+            teamSwitch.MaxTeamSizeDifference = 1;
         }
 
-        public void OnConfigParsed(PluginConfig config)
+        if (teamSwitch.MinRoundsBeforeSwitch < 0)
+            teamSwitch.MinRoundsBeforeSwitch = 0;
+
+        if (teamSwitch.SwitchImmunityTime < 0)
+            teamSwitch.SwitchImmunityTime = 0;
+
+        if (teamSwitch.MaxSkillSwapsPerRound < 0)
+            teamSwitch.MaxSkillSwapsPerRound = 0;
+
+        // Scramble stopped being a balance mode in 6.0. Map old configs over.
+        if (balancing.BalanceMode.StartsWith("Scramble", StringComparison.OrdinalIgnoreCase))
         {
-            Config = config;
-            ValidateConfiguration();
-            PlayerManager.Initialize(Config);
-            BalanceManager.Initialize(Config);
-            EventManager.Initialize(Config);
-            Console.WriteLine("[AdvancedTeamBalance] Configuration parsed and managers updated.");
-        }
-        
-        private void ValidateConfiguration()
-        {
-            bool hasErrors = false;
-            
-            // Validate MinimumPlayers
-            if (Config.General.MinimumPlayers < 0)
-            {
-                Console.WriteLine("[AdvancedTeamBalance] WARNING: MinimumPlayers cannot be negative. Setting to 0.");
-                Config.General.MinimumPlayers = 0;
-                hasErrors = true;
-            }
-            
-            // Validate MaxTeamSizeDifference
-            if (Config.TeamSwitch.MaxTeamSizeDifference < 0)
-            {
-                Console.WriteLine("[AdvancedTeamBalance] WARNING: MaxTeamSizeDifference cannot be negative. Setting to 1.");
-                Config.TeamSwitch.MaxTeamSizeDifference = 1;
-                hasErrors = true;
-            }
-            
-            // Validate MinRoundsBeforeSwitch
-            if (Config.TeamSwitch.MinRoundsBeforeSwitch < 0)
-            {
-                Console.WriteLine("[AdvancedTeamBalance] WARNING: MinRoundsBeforeSwitch cannot be negative. Setting to 0.");
-                Config.TeamSwitch.MinRoundsBeforeSwitch = 0;
-                hasErrors = true;
-            }
-            
-            // Validate BalanceMode
-            var validModes = new[] { "KD", "KDA", "Score", "WinRate", "ScrambleRandom", "ScrambleSkill" };
-            if (!validModes.Any(m => m.Equals(Config.Balancing.BalanceMode, StringComparison.OrdinalIgnoreCase)))
-            {
-                Console.WriteLine($"[AdvancedTeamBalance] WARNING: Invalid BalanceMode '{Config.Balancing.BalanceMode}'. Setting to 'KDA'.");
-                Config.Balancing.BalanceMode = "KDA";
-                hasErrors = true;
-            }
-            
-            // Validate SkillDifferenceThreshold
-            if (Config.Balancing.SkillDifferenceThreshold < 0.0 || Config.Balancing.SkillDifferenceThreshold > 1.0)
-            {
-                Console.WriteLine($"[AdvancedTeamBalance] WARNING: SkillDifferenceThreshold must be between 0.0 and 1.0. Setting to 0.2.");
-                Config.Balancing.SkillDifferenceThreshold = 0.2;
-                hasErrors = true;
-            }
-            
-            // Validate BoostPercentage
-            if (Config.Balancing.BoostPercentage < 0 || Config.Balancing.BoostPercentage > 100)
-            {
-                Console.WriteLine($"[AdvancedTeamBalance] WARNING: BoostPercentage must be between 0 and 100. Setting to 20.");
-                Config.Balancing.BoostPercentage = 20;
-                hasErrors = true;
-            }
-            
-            // Validate BoostTiers if Progressive Boost is enabled
-            if (Config.Balancing.ProgressiveBoost && Config.Balancing.BoostTiers != null)
-            {
-                foreach (var tier in Config.Balancing.BoostTiers.ToList())
-                {
-                    if (tier.Key < 0 || tier.Value < 0 || tier.Value > 100)
-                    {
-                        Console.WriteLine($"[AdvancedTeamBalance] WARNING: Invalid BoostTier [{tier.Key}:{tier.Value}]. Removing.");
-                        Config.Balancing.BoostTiers.Remove(tier.Key);
-                        hasErrors = true;
-                    }
-                }
-            }
-            
-            // Validate BalanceTriggers
-            var validTriggers = new[] { "OnRoundStart", "OnRoundEnd", "OnPlayerJoin", "OnPlayerDisconnect", "OnFreezeTimeEnd" };
-            var invalidTriggers = Config.TeamSwitch.BalanceTriggers.Where(t => !validTriggers.Contains(t)).ToList();
-            if (invalidTriggers.Any())
-            {
-                Console.WriteLine($"[AdvancedTeamBalance] WARNING: Invalid BalanceTriggers found: {string.Join(", ", invalidTriggers)}. Removing.");
-                Config.TeamSwitch.BalanceTriggers = Config.TeamSwitch.BalanceTriggers.Where(t => validTriggers.Contains(t)).ToList();
-                hasErrors = true;
-            }
-            
-            if (!hasErrors && Config.General.EnableDebug)
-            {
-                Console.WriteLine("[AdvancedTeamBalance] Configuration validation passed.");
-            }
+            scramble.Mode = balancing.BalanceMode.Contains("Skill", StringComparison.OrdinalIgnoreCase)
+                ? "Skill"
+                : "Random";
+            balancing.BalanceMode = "KDA";
+            Log.Warning($"BalanceMode 'Scramble*' is no longer supported. Scramble.Mode set to '{scramble.Mode}', BalanceMode set to 'KDA'. See the Scramble config section.");
         }
 
-        private void RegisterEventHandlers()
+        string[] validModes = ["KD", "KDA", "Score", "WinRate"];
+        if (!validModes.Contains(balancing.BalanceMode, StringComparer.OrdinalIgnoreCase))
         {
-            RegisterEventHandler<EventPlayerConnectFull>(EventManager.OnPlayerConnectFull);
-            RegisterEventHandler<EventPlayerDisconnect>(EventManager.OnPlayerDisconnect);
-            RegisterEventHandler<EventPlayerDeath>(EventManager.OnPlayerDeath);
-            RegisterEventHandler<EventRoundEnd>(EventManager.OnRoundEnd);
-            RegisterEventHandler<EventPlayerSpawn>(EventManager.OnPlayerSpawn);
-            RegisterEventHandler<EventRoundPrestart>(EventManager.OnRoundStart);
-
-            RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
+            Log.Warning($"Invalid BalanceMode '{balancing.BalanceMode}', using 'KDA'");
+            balancing.BalanceMode = "KDA";
         }
 
-        private void RegisterCommandHandlers()
+        if (balancing.SkillDifferenceThreshold is < 0.0 or > 1.0)
         {
-            AddCommandListener("jointeam", CommandJoinTeam, HookMode.Pre);
-            
-            // Register player commands
-            AddCommand("css_statsssssss", "Display your balance statistics", CommandStats);
-            AddCommand("css_mystatssssss", "Display your balance statistics", CommandStats);
-            
-            // Register admin commands
-            AddCommand("css_balancepreview", "Preview the next balance operation", CommandPreviewBalance);
-            AddCommand("css_previewbalance", "Preview the next balance operation", CommandPreviewBalance);
-        }
-        
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        private void CommandStats(CCSPlayerController? player, CommandInfo info)
-        {
-            if (player == null || !player.IsValid || player.IsBot)
-                return;
-            
-            var playerData = PlayerManager.GetOrAddPlayer(player);
-            
-            ChatHelper.PrintLocalizedChat(player, true, "stats.header");
-            ChatHelper.PrintLocalizedChat(player, true, "stats.kd", playerData.Stats.KDRatio.ToString("F2"));
-            ChatHelper.PrintLocalizedChat(player, true, "stats.kda", playerData.Stats.KDARatio.ToString("F2"));
-            ChatHelper.PrintLocalizedChat(player, true, "stats.score", playerData.Stats.Score);
-            ChatHelper.PrintLocalizedChat(player, true, "stats.winrate", (playerData.Stats.WinRate * 100).ToString("F1"));
-            ChatHelper.PrintLocalizedChat(player, true, "stats.rounds", playerData.Stats.RoundsPlayed);
-            ChatHelper.PrintLocalizedChat(player, true, "stats.switches", playerData.TimesSwitched);
-        }
-        
-        [CommandHelper(minArgs: 0, whoCanExecute: CommandUsage.CLIENT_ONLY)]
-        private void CommandPreviewBalance(CCSPlayerController? player, CommandInfo info)
-        {
-            if (player == null || !player.IsValid || player.IsBot)
-                return;
-            
-            // Check if player has admin privileges
-            if (!player.PlayerPawn.IsValid)
-                return;
-            
-            bool isAdmin = AdminManager.PlayerHasPermissions(player, Config.Admin.AdminExemptFlag);
-            
-            if (!isAdmin)
-            {
-                player.PrintToChat($"{Config.General.PluginTag} You don't have permission to use this command.");
-                return;
-            }
-            
-            // Get current team states
-            var tPlayers = PlayerManager.GetPlayersByTeam(CsTeam.Terrorist);
-            var ctPlayers = PlayerManager.GetPlayersByTeam(CsTeam.CounterTerrorist);
-            
-            var tPlayersCopy = new List<Player>(tPlayers);
-            var ctPlayersCopy = new List<Player>(ctPlayers);
-            
-            // Calculate current averages
-            double currentTAvg = tPlayers.Count > 0 ? tPlayers.Average(p => BalanceManager.GetPlayerValuePublic(p, Config.Balancing.BalanceMode)) : 0;
-            double currentCTAvg = ctPlayers.Count > 0 ? ctPlayers.Average(p => BalanceManager.GetPlayerValuePublic(p, Config.Balancing.BalanceMode)) : 0;
-            
-            // Simulate balance
-            var result = BalanceManager.BalanceTeams(tPlayersCopy, ctPlayersCopy, 0, 0, false);
-            
-            ChatHelper.PrintLocalizedChat(player, true, "preview.header");
-            ChatHelper.PrintLocalizedChat(player, true, "preview.current", 
-                tPlayers.Count, currentTAvg.ToString("F2"), 
-                ctPlayers.Count, currentCTAvg.ToString("F2"));
-            ChatHelper.PrintLocalizedChat(player, true, "preview.proposed", 
-                tPlayersCopy.Count, ctPlayersCopy.Count);
-            ChatHelper.PrintLocalizedChat(player, true, "preview.moves", 
-                result.PlayersMoved, result.SwapsMade);
+            Log.Warning("SkillDifferenceThreshold must be between 0.0 and 1.0, using 0.2");
+            balancing.SkillDifferenceThreshold = 0.2;
         }
 
-        private void OnMapEnd()
+        if (balancing.BoostPercentage is < 0 or > 100)
         {
-            if (Config.General.EnableDebug)
-            {
-                Console.WriteLine("[AdvancedTeamBalance] Map ended, resetting all statistics and counters");
-            }
-
-            EventManager.ResetMapStats();
-            PlayerManager.ResetAllPlayerStats();
-
-            if (Config.General.EnableDebug)
-            {
-                Console.WriteLine("[AdvancedTeamBalance] All player statistics and counters have been reset");
-            }
+            Log.Warning("BoostPercentage must be between 0 and 100, using 20");
+            balancing.BoostPercentage = 20;
         }
 
-        private HookResult CommandJoinTeam(CCSPlayerController? player, CommandInfo info)
+        if (balancing.BoostAfterLoseStreak < 0)
+            balancing.BoostAfterLoseStreak = 0;
+
+        foreach (var tier in balancing.BoostTiers.Where(t => t.Key < 0 || t.Value is < 0 or > 100).ToList())
         {
-            if (player == null || !player.IsValid || player.IsBot)
-                return HookResult.Continue;
+            Log.Warning($"Removing invalid BoostTier [{tier.Key}: {tier.Value}]");
+            balancing.BoostTiers.Remove(tier.Key);
+        }
 
-            if (!int.TryParse(info.GetArg(1), out int teamIdArg))
-                 return HookResult.Continue;
+        string[] validScrambleModes = ["Random", "Skill"];
+        if (!validScrambleModes.Contains(scramble.Mode, StringComparer.OrdinalIgnoreCase))
+        {
+            Log.Warning($"Invalid Scramble.Mode '{scramble.Mode}', using 'Random'");
+            scramble.Mode = "Random";
+        }
 
-            CsTeam desiredTeamEnum = (CsTeam)teamIdArg;
+        if (scramble.AfterWinStreak < 0)
+            scramble.AfterWinStreak = 0;
 
+        string[] validTriggers = ["OnRoundStart", "OnRoundEnd", "OnPlayerJoin", "OnPlayerDisconnect"];
+        var invalid = teamSwitch.BalanceTriggers
+            .Where(t => !validTriggers.Contains(t, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+        if (invalid.Count > 0)
+        {
+            Log.Warning($"Removing invalid BalanceTriggers: {string.Join(", ", invalid)}");
+            teamSwitch.BalanceTriggers = teamSwitch.BalanceTriggers
+                .Where(t => validTriggers.Contains(t, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
 
-            if (desiredTeamEnum == CsTeam.Spectator)
-                return HookResult.Continue;
+    private void RegisterEventHandlers()
+    {
+        RegisterEventHandler<EventRoundPrestart>(EventManager.OnRoundPrestart);
+        RegisterEventHandler<EventRoundEnd>(EventManager.OnRoundEnd);
+        RegisterEventHandler<EventAnnouncePhaseEnd>(EventManager.OnAnnouncePhaseEnd);
+        RegisterEventHandler<EventPlayerConnectFull>(EventManager.OnPlayerConnectFull);
+        RegisterEventHandler<EventPlayerDisconnect>(EventManager.OnPlayerDisconnect);
+        RegisterEventHandler<EventPlayerDeath>(EventManager.OnPlayerDeath);
 
-            if (desiredTeamEnum != CsTeam.Terrorist && desiredTeamEnum != CsTeam.CounterTerrorist)
-                return HookResult.Continue;
+        RegisterListener<Listeners.OnMapEnd>(EventManager.ResetMatchState);
+    }
 
-            var playerData = PlayerManager.GetOrAddPlayer(player);
-            CsTeam currentActualPlayerTeam = (CsTeam)player.TeamNum;
+    private void RegisterCommands()
+    {
+        AddCommand("css_tbstats", "Show your team balance statistics", CommandStats);
+        AddCommand("css_balancepreview", "Preview what the next balance pass would do", CommandPreviewBalance);
+        AddCommand("css_scramble", "Queue a team scramble for the next round", CommandScramble);
+        AddCommand("css_tbreset", "Reset balance statistics and win streaks", CommandReset);
 
-            if (currentActualPlayerTeam == desiredTeamEnum)
-                 return HookResult.Continue;
+        AddCommandListener("jointeam", CommandJoinTeam, HookMode.Pre);
+    }
 
-            if (playerData.IsExemptFromSwitching)
-                 return HookResult.Continue;
+    private bool HasCommandAccess(CCSPlayerController? player)
+        => player == null || AdminManager.PlayerHasPermissions(player, Config.Admin.AdminCommandFlag);
 
-            var (tCount, ctCount) = PlayerManager.GetTeamCounts();
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    private void CommandStats(CCSPlayerController? player, CommandInfo info)
+    {
+        if (player == null || !player.IsValid || player.IsBot)
+            return;
 
-            int newTCount = tCount;
-            int newCTCount = ctCount;
-            bool isPlayerSwitchingTeams = false;
+        var data = PlayerManager.GetOrAdd(player);
+        var stats = data.Stats;
 
-            if (currentActualPlayerTeam == CsTeam.Terrorist)
-            {
-                newTCount--;
-                isPlayerSwitchingTeams = true;
-            }
-            else if (currentActualPlayerTeam == CsTeam.CounterTerrorist)
-            {
-                newCTCount--;
-                isPlayerSwitchingTeams = true;
-            }
+        ChatHelper.PrintLocalizedChat(player, true, "stats.header");
+        ChatHelper.PrintLocalizedChat(player, true, "stats.kd", stats.KDRatio.ToString("F2"));
+        ChatHelper.PrintLocalizedChat(player, true, "stats.kda", stats.KDARatio.ToString("F2"));
+        ChatHelper.PrintLocalizedChat(player, true, "stats.score", stats.Score);
+        ChatHelper.PrintLocalizedChat(player, true, "stats.winrate", (stats.WinRate * 100).ToString("F1"));
+        ChatHelper.PrintLocalizedChat(player, true, "stats.rounds", stats.RoundsPlayed);
+        ChatHelper.PrintLocalizedChat(player, true, "stats.switches", data.TimesSwitched);
+    }
 
-            if (desiredTeamEnum == CsTeam.Terrorist)
-                newTCount++;
-            else if (desiredTeamEnum == CsTeam.CounterTerrorist)
-                newCTCount++;
-            
-            int potentialDifferenceAfterJoin = Math.Abs(newTCount - newCTCount);
-            bool allowJoinOperation = false;
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+    private void CommandPreviewBalance(CCSPlayerController? player, CommandInfo info)
+    {
+        if (player == null || !player.IsValid || player.IsBot)
+            return;
 
-            if (!isPlayerSwitchingTeams && Config.TeamSwitch.MaxTeamSizeDifference == 0 && potentialDifferenceAfterJoin == 1)
-            {
-                allowJoinOperation = true;
-                if (Config.General.EnableDebug)
-                {
-                    Console.WriteLine($"[AdvancedTeamBalance] JoinTeam CMD: Permitting non-switcher {player.PlayerName} to join {desiredTeamEnum} (making teams {newTCount}v{newCTCount}) despite MaxTeamSizeDifference=0, because potential difference is 1.");
-                }
-            }
-            else if (potentialDifferenceAfterJoin <= Config.TeamSwitch.MaxTeamSizeDifference)
-            {
-                allowJoinOperation = true;
-            }
+        if (!HasCommandAccess(player))
+        {
+            ChatHelper.PrintLocalizedChat(player, true, "command.nopermission");
+            return;
+        }
 
-            if (allowJoinOperation)
-            {
-                playerData.UpdateTeamState(desiredTeamEnum, 0);
-                if (Config.General.EnableDebug)
-                {
-                     Console.WriteLine($"[AdvancedTeamBalance] JoinTeam CMD: Allowing {player.PlayerName} to join {desiredTeamEnum}. Teams will be T:{newTCount} CT:{newCTCount}. PotentialDiff: {potentialDifferenceAfterJoin} <= MaxDiff: {Config.TeamSwitch.MaxTeamSizeDifference}");
-                }
-                return HookResult.Continue;
-            }
+        var snapshot = PlayerManager.Snapshot();
+        var t = snapshot.Where(p => p.Team == CsTeam.Terrorist).ToList();
+        var ct = snapshot.Where(p => p.Team == CsTeam.CounterTerrorist).ToList();
+
+        double avgT = t.Count > 0 ? t.Average(p => p.Rating) : 0;
+        double avgCt = ct.Count > 0 ? ct.Average(p => p.Rating) : 0;
+
+        var plan = EventManager.ComputePrestartPlan(snapshot);
+
+        ChatHelper.PrintLocalizedChat(player, true, "preview.header");
+        ChatHelper.PrintLocalizedChat(player, true, "preview.current",
+            t.Count, avgT.ToString("F2"), ct.Count, avgCt.ToString("F2"));
+
+        if (plan.IsEmpty)
+        {
+            ChatHelper.PrintLocalizedChat(player, true, "preview.none");
+            return;
+        }
+
+        foreach (var move in plan.Moves)
+        {
+            ChatHelper.PrintLocalizedChat(player, true, "preview.move",
+                move.Player.Name, move.To == CsTeam.Terrorist ? "T" : "CT");
+        }
+
+        ChatHelper.PrintLocalizedChat(player, true, "preview.moves", plan.SizeMoves, plan.SkillSwaps);
+    }
+
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    private void CommandScramble(CCSPlayerController? player, CommandInfo info)
+    {
+        if (!HasCommandAccess(player))
+        {
+            ChatHelper.PrintLocalizedChat(player, true, "command.nopermission");
+            return;
+        }
+
+        if (EventManager.IsScramblePending)
+        {
+            if (player != null)
+                ChatHelper.PrintLocalizedChat(player, true, "scramble.already_queued");
             else
-            {
-                // Determine the correct team for balance
-                CsTeam correctTeam;
-                if (newTCount > newCTCount)
-                    correctTeam = CsTeam.CounterTerrorist;
-                else if (newCTCount > newTCount)
-                    correctTeam = CsTeam.Terrorist;
-                else
-                {
-                    correctTeam = (desiredTeamEnum == CsTeam.Terrorist) ? CsTeam.CounterTerrorist : CsTeam.Terrorist;
-                }
-
-                if (correctTeam != CsTeam.None && currentActualPlayerTeam != correctTeam)
-                {
-                    if (player.PawnIsAlive)
-                    {
-                        ChatHelper.PrintLocalizedChat(player, true, "jointeam.imbalance");
-                        ChatHelper.PrintLocalizedChat(player, true, "jointeam.delayed");
-                        playerData.UpdateTeamState(correctTeam, 0);
-                    }
-                    else
-                    {
-                        player.ChangeTeam(correctTeam);
-                        playerData.UpdateTeamState(correctTeam, 0);
-                        ChatHelper.PrintLocalizedChat(player, true, "jointeam.forced", correctTeam.ToString());
-                    }
-                }
-                else if (correctTeam == currentActualPlayerTeam)
-                {
-                    ChatHelper.PrintLocalizedChat(player, true, "jointeam.already_balanced");
-                }
-
-                if (Config.General.EnableDebug)
-                {
-                     Console.WriteLine($"[AdvancedTeamBalance] JoinTeam CMD: Auto-switching {player.PlayerName} from {desiredTeamEnum} to {correctTeam} for balance. Teams would be T:{newTCount} CT:{newCTCount}. PotentialDiff: {potentialDifferenceAfterJoin} > MaxDiff: {Config.TeamSwitch.MaxTeamSizeDifference}. Alive: {player.PawnIsAlive}");
-                }
-                return HookResult.Handled;
-            }
+                info.ReplyToCommand("[TeamBalance] A scramble is already queued.");
+            return;
         }
 
-        public override void Unload(bool hotReload)
+        EventManager.QueueScramble();
+
+        if (player == null)
+            info.ReplyToCommand("[TeamBalance] Scramble queued for the next round.");
+    }
+
+    [CommandHelper(whoCanExecute: CommandUsage.CLIENT_AND_SERVER)]
+    private void CommandReset(CCSPlayerController? player, CommandInfo info)
+    {
+        if (!HasCommandAccess(player))
         {
-            PlayerManager.Cleanup();
-            Instance = null;
-            _localizer = null;
-
-            Console.WriteLine("[AdvancedTeamBalance] Plugin unloaded");
+            ChatHelper.PrintLocalizedChat(player, true, "command.nopermission");
+            return;
         }
+
+        PlayerManager.ResetAllStats();
+        EventManager.ResetStreaks();
+
+        if (player != null)
+            ChatHelper.PrintLocalizedChat(player, true, "admin.reset.done");
+        else
+            info.ReplyToCommand("[TeamBalance] Balance statistics and win streaks were reset.");
+    }
+
+    /// <summary>
+    /// Steers manual team joins. Joins that keep sizes within the limit pass
+    /// through. Joins that would unbalance the teams are blocked; dead players
+    /// are redirected to the smaller team instead.
+    /// </summary>
+    private HookResult CommandJoinTeam(CCSPlayerController? player, CommandInfo info)
+    {
+        if (player == null || !player.IsValid || player.IsBot || player.IsHLTV)
+            return HookResult.Continue;
+
+        if (info.ArgCount < 2 || !int.TryParse(info.GetArg(1), out int teamArg))
+            return HookResult.Continue;
+
+        var desired = (CsTeam)teamArg;
+
+        // Spectator and auto-assign are always allowed.
+        if (desired != CsTeam.Terrorist && desired != CsTeam.CounterTerrorist)
+            return HookResult.Continue;
+
+        var current = player.Team;
+        if (current == desired)
+            return HookResult.Continue;
+
+        int t = 0, ct = 0;
+        foreach (var other in PlayerManager.GetTeamPlayers())
+        {
+            if (other.SteamID == player.SteamID)
+                continue;
+            if (other.Team == CsTeam.Terrorist) t++;
+            else ct++;
+        }
+
+        int newT = t + (desired == CsTeam.Terrorist ? 1 : 0);
+        int newCt = ct + (desired == CsTeam.CounterTerrorist ? 1 : 0);
+
+        // With an odd player count a difference of 1 is unavoidable.
+        int effectiveMax = Math.Max(Config.TeamSwitch.MaxTeamSizeDifference, (newT + newCt) % 2);
+
+        if (Math.Abs(newT - newCt) <= effectiveMax)
+        {
+            PlayerManager.GetOrAdd(player).OnVoluntarySwitch();
+            return HookResult.Continue;
+        }
+
+        var smaller = t <= ct ? CsTeam.Terrorist : CsTeam.CounterTerrorist;
+
+        if (current == smaller)
+        {
+            ChatHelper.PrintLocalizedChat(player, true, "jointeam.already_balanced");
+            return HookResult.Handled;
+        }
+
+        if (player.PawnIsAlive)
+        {
+            ChatHelper.PrintLocalizedChat(player, true, "jointeam.imbalance");
+            return HookResult.Handled;
+        }
+
+        player.ChangeTeam(smaller);
+        PlayerManager.GetOrAdd(player).OnVoluntarySwitch();
+        ChatHelper.PrintLocalizedChat(player, true,
+            smaller == CsTeam.Terrorist ? "jointeam.forced.t" : "jointeam.forced.ct");
+        return HookResult.Handled;
     }
 }

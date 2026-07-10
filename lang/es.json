@@ -1,18 +1,42 @@
 {
-    "jointeam.imbalance": "{0} {red}No puedes unirte{default} a ese equipo ya que causaría un desequilibrio.",
-    "jointeam.suggest": "{0} Intenta unirte al equipo {green}{1}{default} para mantener el balance.",
-    "jointeam.forced": "{0} Has sido movido al equipo {green}{1}{default} para mantener el balance.",
-    "jointeam.delayed": "{0} Serás movido a un equipo equilibrado {purple}cuando mueras{default}.",
-    
-    "balance.scramble.winstreak": "{0} Los equipos serán {gold}mezclados{default} después de que los {green}{1}{default} ganaran {lightred}{2}{default} rondas seguidas!",
-    "balance.boost.losestreak": "{0} El equipo {red}{1}{default} ha perdido {lightred}{2}{default} rondas seguidas. {green}El balance les asignará mejores jugadores{default} en la siguiente ronda.",
-    "balance.size.moved": "{0} {green}{1}{default} jugador{2} movido{2} para mantener el balance numérico de los equipos.",
-    "balance.skill.swapped": "{0} {green}{1}{default} par{2} de jugadores intercambiado{2} para equilibrar los niveles de habilidad.",
-    "balance.force": "{0} {red}Desequilibrio crítico detectado{default}. Se forzó a {green}{1}{default} jugadores a cambiar de equipo.",
-    
-    "scramble.random": "{0} ¡Los equipos han sido {gold}mezclados aleatoriamente{default} para un mejor balance!",
-    "scramble.skill": "{0} ¡Los equipos han sido {gold}mezclados según habilidad{default} para un mejor balance!",
-    
-    "player.moved.t": "{0} Has sido movido al equipo {orange}Terrorista{default} para mantener el balance.",
-    "player.moved.ct": "{0} Has sido movido al equipo {blue}Antiterrorista{default} para mantener el balance."
+    "jointeam.imbalance": "{0} {red}No puedes unirte a ese equipo{default} ahora mismo, desequilibraría los equipos.",
+    "jointeam.already_balanced": "{0} Ya estás en el {green}equipo correcto{default}.",
+    "jointeam.forced.t": "{0} Has sido asignado a los {orange}Terroristas{default} para mantener los equipos parejos.",
+    "jointeam.forced.ct": "{0} Has sido asignado a los {blue}Antiterroristas{default} para mantener los equipos parejos.",
+
+    "player.moved.t": "{0} Has sido movido a los {orange}Terroristas{default} para mantener el equilibrio.",
+    "player.moved.ct": "{0} Has sido movido a los {blue}Antiterroristas{default} para mantener el equilibrio.",
+
+    "balance.size.moved": "{0} Se movió a {green}{1}{default} jugador(es) para igualar los equipos.",
+    "balance.size.moved.reason": "{0} Se movió a {green}{1}{default} jugador(es) para igualar los equipos ({orange}T {2}{default} vs {blue}CT {3}{default}).",
+    "balance.skill.swapped": "{0} Se intercambió {green}{1}{default} pareja(s) de jugadores para equilibrar el nivel.",
+    "balance.skill.swapped.reason": "{0} Se intercambió {green}{1}{default} pareja(s) de jugadores para equilibrar {orange}{2}{default} (diferencia restante: {lightred}{3}{default}).",
+
+    "balance.boost.losestreak.t": "{0} Los {orange}Terroristas{default} perdieron {lightred}{1}{default} rondas seguidas. El próximo balance los favorecerá.",
+    "balance.boost.losestreak.ct": "{0} Los {blue}Antiterroristas{default} perdieron {lightred}{1}{default} rondas seguidas. El próximo balance los favorecerá.",
+
+    "scramble.queued": "{0} Los equipos serán {gold}mezclados{default} al inicio de la próxima ronda.",
+    "scramble.winstreak.t": "{0} Los {orange}Terroristas{default} ganaron {lightred}{1}{default} rondas seguidas. ¡Los equipos serán {gold}mezclados{default} la próxima ronda!",
+    "scramble.winstreak.ct": "{0} Los {blue}Antiterroristas{default} ganaron {lightred}{1}{default} rondas seguidas. ¡Los equipos serán {gold}mezclados{default} la próxima ronda!",
+    "scramble.halftime": "{0} ¡Medio tiempo! Los equipos serán {gold}mezclados{default} la próxima ronda.",
+    "scramble.random": "{0} Los equipos fueron {gold}mezclados aleatoriamente{default}.",
+    "scramble.skill": "{0} Los equipos fueron {gold}mezclados según su nivel{default}.",
+    "scramble.already_queued": "{0} Ya hay una mezcla {gold}programada{default} para la próxima ronda.",
+
+    "stats.header": "{0} {gold}=== Tus estadísticas de balance ==={default}",
+    "stats.kd": "{0} Ratio K/D: {green}{1}{default}",
+    "stats.kda": "{0} KDA: {green}{1}{default}",
+    "stats.score": "{0} Puntuación: {green}{1}{default}",
+    "stats.winrate": "{0} Porcentaje de victorias: {green}{1}%{default}",
+    "stats.rounds": "{0} Rondas jugadas: {green}{1}{default}",
+    "stats.switches": "{0} Cambios de equipo: {green}{1}{default}",
+
+    "preview.header": "{0} {gold}=== Vista previa del balance ==={default}",
+    "preview.current": "{0} Actual: {orange}T {1}{default} (prom. {2}) vs {blue}CT {3}{default} (prom. {4})",
+    "preview.move": "{0} - {green}{1}{default}: {2}",
+    "preview.moves": "{0} Planificado: {green}{1}{default} movimiento(s), {green}{2}{default} intercambio(s).",
+    "preview.none": "{0} Los equipos ya están equilibrados. No se necesitan cambios.",
+
+    "command.nopermission": "{0} No tienes permiso para usar este comando.",
+    "admin.reset.done": "{0} Estadísticas de balance y rachas reiniciadas."
 }

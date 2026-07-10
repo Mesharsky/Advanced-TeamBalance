@@ -1,83 +1,65 @@
-using CounterStrikeSharp.API.Modules.Utils;
+namespace AdvancedTeamBalance;
 
-namespace AdvancedTeamBalance
+/// <summary>
+/// Per-player bookkeeping kept for the duration of a map. Survives reconnects
+/// so leaving and rejoining does not wipe stats. Team membership is never
+/// stored here; it is always read live from the server.
+/// </summary>
+public class PlayerData(ulong steamId, string name)
 {
-    /// <summary>
-    /// Represents a player with their statistics and team information
-    /// </summary>
-    // Add this property to the Player class
-    public class Player(ulong steamId, string name, CsTeam team)
+    public ulong SteamId { get; } = steamId;
+    public string Name { get; set; } = name;
+
+    /// <summary>Refreshed from admin flags on every snapshot. Exempt players are never auto-moved.</summary>
+    public bool IsExemptFromSwitching { get; set; }
+
+    public PlayerStats Stats { get; } = new();
+
+    public int RoundsOnCurrentTeam { get; set; }
+    public int TimesSwitched { get; set; }
+    public DateTime? LastPluginSwitch { get; set; }
+
+    public bool IsImmune(int immunitySeconds)
+        => LastPluginSwitch is { } switchedAt
+           && (DateTime.UtcNow - switchedAt).TotalSeconds < immunitySeconds;
+
+    /// <summary>Called when the plugin moves this player to another team.</summary>
+    public void OnSwitchedByPlugin()
     {
-        public ulong SteamId { get; set; } = steamId;
-        public string Name { get; set; } = name;
-        public CsTeam Team { get; set; } = team;
-        public bool IsConnected { get; set; } = true;
-        public bool IsExemptFromSwitching { get; set; }
-        
-        public bool IsAlive { get; set; } = false;
-        
-        public PlayerStats Stats { get; private set; } = new PlayerStats();
-
-        public DateTime LastTeamSwitchTime { get; set; } = DateTime.UtcNow;
-        public int RoundsOnCurrentTeam { get; set; }
-        public int ImmunityTimeRemaining { get; set; }
-        public int TimesSwitched { get; set; } = 0;
-
-        public bool CanBeSwitched(int minRoundsBeforeSwitch)
-        {
-            if (IsExemptFromSwitching || ImmunityTimeRemaining > 0)
-                return false;
-                
-            if (RoundsOnCurrentTeam < minRoundsBeforeSwitch)
-                return false;
-                
-            // Don't switch alive players
-            if (IsAlive)
-                return false;
-                
-            return true;
-        }
-        
-        /// <summary>
-        /// Updates the player's team state
-        /// </summary>
-        public void UpdateTeamState(CsTeam newTeam, int immunityTime = 0)
-        {
-            if (Team != newTeam)
-            {
-                TimesSwitched++;
-            }
-            Team = newTeam;
-            RoundsOnCurrentTeam = 0;
-            LastTeamSwitchTime = DateTime.UtcNow;
-            ImmunityTimeRemaining = immunityTime;
-        }
+        TimesSwitched++;
+        RoundsOnCurrentTeam = 0;
+        LastPluginSwitch = DateTime.UtcNow;
     }
-    
-    /// <summary>
-    /// Contains player performance statistics
-    /// </summary>
-    public class PlayerStats
+
+    /// <summary>Called when the player changes team on their own.</summary>
+    public void OnVoluntarySwitch() => RoundsOnCurrentTeam = 0;
+}
+
+public class PlayerStats
+{
+    public int Kills { get; set; }
+    public int Deaths { get; set; }
+    public int Assists { get; set; }
+
+    /// <summary>Scoreboard score, synced from the game before each balance pass.</summary>
+    public int Score { get; set; }
+
+    public int RoundsPlayed { get; set; }
+    public int RoundsWon { get; set; }
+
+    public double KDRatio => (double)Kills / Math.Max(1, Deaths);
+    public double KDARatio => (Kills + Assists * 0.5) / Math.Max(1, Deaths);
+
+    /// <summary>Fraction of played rounds won, 0.0 to 1.0.</summary>
+    public double WinRate => RoundsPlayed == 0 ? 0 : (double)RoundsWon / RoundsPlayed;
+
+    public void Reset()
     {
-        public int Kills { get; set; }
-        public int Deaths { get; set; }
-        public int Assists { get; set; }
-        public int Score { get; set; }
-        public int RoundsPlayed { get; set; }
-        public int RoundsWon { get; set; }
-        
-        public double KDRatio => Deaths == 0 ? Kills : (double)Kills / Deaths;
-        public double KDARatio => Deaths == 0 ? (Kills + (Assists * 0.5)) : (Kills + (Assists * 0.5)) / Deaths;
-        public double WinRate => RoundsPlayed == 0 ? 0 : (double)RoundsWon / RoundsPlayed * 100;
-        
-        public void Reset()
-        {
-            Kills = 0;
-            Deaths = 0;
-            Assists = 0;
-            Score = 0;
-            RoundsPlayed = 0;
-            RoundsWon = 0;
-        }
+        Kills = 0;
+        Deaths = 0;
+        Assists = 0;
+        Score = 0;
+        RoundsPlayed = 0;
+        RoundsWon = 0;
     }
 }

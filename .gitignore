@@ -1,8 +1,4 @@
-!.gitignore
-!Mesharsky_AdvancedTeamBalance.toml
-!README.md
 .vs/
 **/obj/
 **/bin/
 *.sln
-*.csproj

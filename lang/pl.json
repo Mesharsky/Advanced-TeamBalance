@@ -1,37 +1,42 @@
 {
-    "jointeam.imbalance": "{0} {red}Nie możesz dołączyć{default} do tej drużyny, ponieważ spowoduje to brak balansu.",
-    "jointeam.suggest": "{0} Spróbuj dołączyć do drużyny {green}{1}{default} by zachować balans.",
-    "jointeam.forced": "{0} Zostałeś przeniesiony do drużyny {green}{1}{default} aby zachować balans.",
-    "jointeam.delayed": "{0} Zostaniesz przeniesiony do zbalansowanej drużyny {purple}po śmierci{default}.",
+    "jointeam.imbalance": "{0} {red}Nie możesz teraz dołączyć do tej drużyny{default}, ponieważ zaburzyłoby to balans.",
     "jointeam.already_balanced": "{0} Jesteś już w {green}odpowiedniej drużynie{default} dla balansu.",
-    
-    "balance.scramble.winstreak": "{0} Drużyny zostaną {gold}przemieszane{default} po tym, jak {green}{1}{default} wygrali {lightred}{2}{default} rund z rzędu!",
-    "balance.boost.losestreak": "{0} Drużyna {red}{1}{default} przegrała {lightred}{2}{default} rund z rzędu. {green}Balans przydzieli im lepszych graczy{default} w następnej rundzie.",
-    "balance.boost.applying": "{0} {gold}Stosowanie wzmocnienia{default} dla drużyny {red}{1}{default} (przegrała {lightred}{2}{default} rund) - {green}{3}%{default} przewaga umiejętności.",
-    "balance.size.moved": "{0} Przeniesiono {green}{1}{default} graczy dla zachowania balansu liczebnego drużyn.",
-    "balance.size.moved.reason": "{0} Przeniesiono {green}{1}{default} graczy dla zbalansowania liczebności drużyn ({orange}T:{3} vs CT:{4}{default}).",
-    "balance.skill.swapped": "{0} Zamieniono {green}{1}{default} par{2} graczy dla zbalansowania umiejętności drużyn.",
-    "balance.skill.swapped.reason": "{0} Zamieniono {green}{1}{default} par{2} graczy dla zbalansowania {orange}{3}{default} (różnica: {lightred}{4}{default}).",
-    "balance.force": "{0} {red}Wykryto krytyczny brak balansu drużyn{default}. Wymuszono przeniesienie {green}{1}{default} graczy.",
-    
-    "scramble.random": "{0} Drużyny zostały {gold}losowo przemieszane{default} dla lepszego balansu!",
-    "scramble.skill": "{0} Drużyny zostały {gold}przemieszane według umiejętności{default} dla lepszego balansu!",
-    
-    "player.moved.t": "{0} Zostałeś przeniesiony do drużyny {orange}Terrorystów{default} aby zachować balans.",
-    "player.moved.ct": "{0} Zostałeś przeniesiony do drużyny {blue}Antyterrorystów{default} aby zachować balans.",
-    "player.moved.t.reason": "{0} Zostałeś przeniesiony do drużyny {orange}Terrorystów{default} aby {green}{1}{default}.",
-    "player.moved.ct.reason": "{0} Zostałeś przeniesiony do drużyny {blue}Antyterrorystów{default} aby {green}{1}{default}.",
-    
-    "stats.header": "{0} {gold}=== Twoje Statystyki ==={default}",
+    "jointeam.forced.t": "{0} Zostałeś przydzielony do {orange}Terrorystów{default}, aby wyrównać drużyny.",
+    "jointeam.forced.ct": "{0} Zostałeś przydzielony do {blue}Antyterrorystów{default}, aby wyrównać drużyny.",
+
+    "player.moved.t": "{0} Zostałeś przeniesiony do {orange}Terrorystów{default}, aby zachować balans drużyn.",
+    "player.moved.ct": "{0} Zostałeś przeniesiony do {blue}Antyterrorystów{default}, aby zachować balans drużyn.",
+
+    "balance.size.moved": "{0} Przeniesiono graczy ({green}{1}{default}), aby wyrównać liczebność drużyn.",
+    "balance.size.moved.reason": "{0} Przeniesiono graczy ({green}{1}{default}), aby wyrównać liczebność drużyn ({orange}T {2}{default} vs {blue}CT {3}{default}).",
+    "balance.skill.swapped": "{0} Zamieniono pary graczy ({green}{1}{default}), aby zbalansować poziom drużyn.",
+    "balance.skill.swapped.reason": "{0} Zamieniono pary graczy ({green}{1}{default}), aby zbalansować {orange}{2}{default} (pozostała różnica: {lightred}{3}{default}).",
+
+    "balance.boost.losestreak.t": "{0} {orange}Terroryści{default} przegrali {lightred}{1}{default} rund z rzędu. Następny balans będzie ich faworyzował.",
+    "balance.boost.losestreak.ct": "{0} {blue}Antyterroryści{default} przegrali {lightred}{1}{default} rund z rzędu. Następny balans będzie ich faworyzował.",
+
+    "scramble.queued": "{0} Drużyny zostaną {gold}przemieszane{default} na początku następnej rundy.",
+    "scramble.winstreak.t": "{0} {orange}Terroryści{default} wygrali {lightred}{1}{default} rund z rzędu. Drużyny zostaną {gold}przemieszane{default} w następnej rundzie!",
+    "scramble.winstreak.ct": "{0} {blue}Antyterroryści{default} wygrali {lightred}{1}{default} rund z rzędu. Drużyny zostaną {gold}przemieszane{default} w następnej rundzie!",
+    "scramble.halftime": "{0} Połowa meczu! Drużyny zostaną {gold}przemieszane{default} w następnej rundzie.",
+    "scramble.random": "{0} Drużyny zostały {gold}losowo przemieszane{default}.",
+    "scramble.skill": "{0} Drużyny zostały {gold}przemieszane według umiejętności{default}.",
+    "scramble.already_queued": "{0} Przemieszanie drużyn jest {gold}już zaplanowane{default} na następną rundę.",
+
+    "stats.header": "{0} {gold}=== Twoje statystyki balansu ==={default}",
     "stats.kd": "{0} Stosunek K/D: {green}{1}{default}",
     "stats.kda": "{0} KDA: {green}{1}{default}",
     "stats.score": "{0} Wynik: {green}{1}{default}",
     "stats.winrate": "{0} Procent wygranych: {green}{1}%{default}",
-    "stats.rounds": "{0} Rozegranych rund: {green}{1}{default}",
+    "stats.rounds": "{0} Rozegrane rundy: {green}{1}{default}",
     "stats.switches": "{0} Liczba zmian drużyny: {green}{1}{default}",
-    
-    "preview.header": "{0} {gold}=== Podgląd Balansu ==={default}",
-    "preview.current": "{0} Obecnie: T={orange}{1}{default} (śr: {2}) vs CT={blue}{3}{default} (śr: {4})",
-    "preview.proposed": "{0} Po balansie: T={orange}{1}{default} vs CT={blue}{2}{default}",
-    "preview.moves": "{0} Przeniesienie {green}{1}{default} graczy, zamiana {green}{2}{default} par."
+
+    "preview.header": "{0} {gold}=== Podgląd balansu ==={default}",
+    "preview.current": "{0} Obecnie: {orange}T {1}{default} (śr. {2}) vs {blue}CT {3}{default} (śr. {4})",
+    "preview.move": "{0} - {green}{1}{default}: {2}",
+    "preview.moves": "{0} Plan: przeniesienia: {green}{1}{default}, zamiany: {green}{2}{default}.",
+    "preview.none": "{0} Drużyny są już zbalansowane. Zmiany nie są potrzebne.",
+
+    "command.nopermission": "{0} Nie masz uprawnień do użycia tej komendy.",
+    "admin.reset.done": "{0} Statystyki balansu i serie zwycięstw zostały zresetowane."
 }

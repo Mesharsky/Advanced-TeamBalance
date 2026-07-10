@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Condition=" '$(EAZFUSCATOR_NET_HOME)' != '' and Exists('$(EAZFUSCATOR_NET_HOME)\Integration\MSBuild\Eazfuscator.NET.targets') " Project="$(EAZFUSCATOR_NET_HOME)\Integration\MSBuild\Eazfuscator.NET.targets" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>AdvancedTeamBalance</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <PublishDir>./bin/$(AssemblyName)/</PublishDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.370">
+      <PrivateAssets>none</PrivateAssets>
+      <ExcludeAssets>runtime</ExcludeAssets>
+      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="lang\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

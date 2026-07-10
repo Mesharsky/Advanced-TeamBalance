@@ -1,233 +1,105 @@
-using System.Collections.Concurrent;
-using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Utils;
 using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Admin;
+using CounterStrikeSharp.API.Modules.Utils;
 
-namespace AdvancedTeamBalance
+namespace AdvancedTeamBalance;
+
+/// <summary>
+/// Tracks per-player statistics for the current map. Team membership is always
+/// read live from the server, never cached, so it cannot go stale.
+/// </summary>
+public static class PlayerManager
 {
-    /// <summary>
-    /// Manages player data and provides access to player statistics
-    /// </summary>
-    public static class PlayerManager
+    private static readonly Dictionary<ulong, PlayerData> _players = [];
+    private static PluginConfig _config = null!;
+
+    public static void Initialize(PluginConfig config) => _config = config;
+
+    public static PlayerData GetOrAdd(CCSPlayerController controller)
     {
-        private static readonly ConcurrentDictionary<ulong, Player> _players = new();
-        private static PluginConfig _config = null!;
-
-        public static void Initialize(PluginConfig config)
+        if (_players.TryGetValue(controller.SteamID, out var data))
         {
-            _config = config;
-        }
-        
-        /// <summary>
-        /// Get or add a player to the tracking system
-        /// </summary>
-        public static Player GetOrAddPlayer(CCSPlayerController controller)
-        {
-            if (_players.TryGetValue(controller.SteamID, out var player))
-            {
-                if (player.Name != controller.PlayerName)
-                {
-                    player.Name = controller.PlayerName;
-                }
-                
-                if (!player.IsConnected)
-                {
-                    player.IsConnected = true;
-                }
-                
-                return player;
-            }
-            
-            var newPlayer = new Player(controller.SteamID, controller.PlayerName, (CsTeam)controller.TeamNum);
-            _players[controller.SteamID] = newPlayer;
-            
-            if (_config.Admin.ExcludeAdmins)
-            {
-                newPlayer.IsExemptFromSwitching = IsPlayerAdmin(controller);
-            }
-            
-            return newPlayer;
-        }
-        
-        private static bool IsPlayerAdmin(CCSPlayerController player)
-        {
-            if (player == null || !player.IsValid)
-                return false;
-                
-            return CounterStrikeSharp.API.Modules.Admin.AdminManager.PlayerHasPermissions(
-                player, 
-                _config.Admin.AdminExemptFlag
-            );
-        }
-        
-        /// <summary>
-        /// Get all active players
-        /// </summary>
-        public static List<Player> GetAllPlayers()
-        {
-            return [.. _players.Values.Where(p => p.IsConnected)];
-        }
-        
-        /// <summary>
-        /// Get all players on a specific team
-        /// </summary>
-        public static List<Player> GetPlayersByTeam(CsTeam team)
-        {
-            return [.. _players.Values.Where(p => p.IsConnected && p.Team == team)];
-        }
-        
-        public static void MarkPlayerDisconnected(ulong steamId)
-        {
-            if (_players.TryGetValue(steamId, out var player))
-            {
-                player.IsConnected = false;
-            }
-        }
-        
-        /// <summary>
-        /// Get the current team balance
-        /// </summary>
-        public static (int TCount, int CTCount) GetTeamCounts()
-        {
-            var tCount = _players.Values.Count(p => p.IsConnected && p.Team == CsTeam.Terrorist);
-            var ctCount = _players.Values.Count(p => p.IsConnected && p.Team == CsTeam.CounterTerrorist);
-            return (tCount, ctCount);
-        }
-        
-        /// <summary>
-        /// Reset all tracking
-        /// </summary>
-        public static void Cleanup()
-        {
-            _players.Clear();
+            data.Name = controller.PlayerName;
+            return data;
         }
 
-        /// <summary>
-        /// Verifies all tracked players against actual server state and cleans up stale entries
-        /// </summary>
-        public static void VerifyAllPlayers()
-        {
-            if (_config.General.EnableDebug)
-            {
-                Console.WriteLine("[AdvancedTeamBalance] Verifying all player data against server state...");
-            }
-
-            // Get all current server players
-            var connectedPlayers = new HashSet<ulong>();
-            var controllers = Utilities.GetPlayers();
-            
-            // First pass: update all active players and mark which ones are really connected
-            foreach (var controller in controllers)
-            {
-                if (controller != null && controller.IsValid && !controller.IsBot)
-                {
-                    connectedPlayers.Add(controller.SteamID);
-                    
-                    if (_players.TryGetValue(controller.SteamID, out var player))
-                    {
-                        if (player.Name != controller.PlayerName)
-                        {
-                            player.Name = controller.PlayerName;
-                        }
-                        
-                        player.IsConnected = true;
-                        
-                        CsTeam actualTeam = (CsTeam)controller.TeamNum;
-                        if (player.Team != actualTeam)
-                        {
-                            if (_config.General.EnableDebug)
-                            {
-                                Console.WriteLine($"[AdvancedTeamBalance] Fixing team mismatch for {player.Name}: Tracked={player.Team}, Actual={actualTeam}");
-                            }
-                            player.Team = actualTeam;
-                        }
-                    }
-                    else
-                    {
-                        _players[controller.SteamID] = new Player(controller.SteamID, controller.PlayerName, (CsTeam)controller.TeamNum);
-                        if (_config.General.EnableDebug)
-                        {
-                            Console.WriteLine($"[AdvancedTeamBalance] Added missing player: {controller.PlayerName}");
-                        }
-                    }
-                }
-            }
-            
-            int disconnectedCount = 0;
-            foreach (var player in _players.Values)
-            {
-                if (player.IsConnected && !connectedPlayers.Contains(player.SteamId))
-                {
-                    player.IsConnected = false;
-                    disconnectedCount++;
-                    
-                    if (_config.General.EnableDebug)
-                    {
-                        Console.WriteLine($"[AdvancedTeamBalance] Marking stale player as disconnected: {player.Name}");
-                    }
-                }
-            }
-            
-            if (_config.General.EnableDebug)
-            {
-                var (tCount, ctCount) = GetTeamCounts();
-                Console.WriteLine($"[AdvancedTeamBalance] Verification complete. Fixed {disconnectedCount} stale entries.");
-                Console.WriteLine($"[AdvancedTeamBalance] Current verified team counts - T: {tCount}, CT: {ctCount}");
-                
-                int actualTCount = controllers.Count(p => p.IsValid && !p.IsBot && p.TeamNum == (int)CsTeam.Terrorist);
-                int actualCTCount = controllers.Count(p => p.IsValid && !p.IsBot && p.TeamNum == (int)CsTeam.CounterTerrorist);
-                Console.WriteLine($"[AdvancedTeamBalance] Actual server team counts - T: {actualTCount}, CT: {actualCTCount}");
-            }
-        }
-
-        public static void SyncPlayerData()
-        {
-            var controllers = Utilities.GetPlayers();
-            foreach (var controller in controllers)
-            {
-                if (controller != null && controller.IsValid && !controller.IsBot)
-                {
-                    var player = GetOrAddPlayer(controller);
-                    
-                    if (player.Team != (CsTeam)controller.TeamNum)
-                    {
-                        if (_config.General.EnableDebug)
-                        {
-                            Console.WriteLine($"[AdvancedTeamBalance] Syncing player {player.Name} team: {player.Team} → {(CsTeam)controller.TeamNum}");
-                        }
-                        player.Team = (CsTeam)controller.TeamNum;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Resets all player statistics when the map changes
-        /// </summary>
-        public static void ResetAllPlayerStats()
-        {
-            foreach (var player in _players.Values)
-            {
-                if (player.IsConnected)
-                {
-                    // Reset player statistics
-                    player.Stats.Reset();
-                    
-                    // Reset team-related counters
-                    player.RoundsOnCurrentTeam = 0;
-                    player.ImmunityTimeRemaining = 0;
-                    
-                    if (_config.General.EnableDebug)
-                    {
-                        Console.WriteLine($"[AdvancedTeamBalance] Reset stats for player: {player.Name}");
-                    }
-                }
-            }
-            
-            if (_config.General.EnableDebug)
-            {
-                Console.WriteLine($"[AdvancedTeamBalance] PlayerManager: Reset stats for {_players.Values.Count(p => p.IsConnected)} connected players");
-            }
-        }
+        var created = new PlayerData(controller.SteamID, controller.PlayerName);
+        _players[controller.SteamID] = created;
+        return created;
     }
+
+    public static bool IsHumanPlayer(CCSPlayerController? controller)
+        => controller != null
+           && controller.IsValid
+           && !controller.IsBot
+           && !controller.IsHLTV
+           && controller.Connected == PlayerConnectedState.Connected;
+
+    /// <summary>Human players currently on T or CT. Spectators are never included.</summary>
+    public static List<CCSPlayerController> GetTeamPlayers()
+    {
+        var result = new List<CCSPlayerController>();
+        foreach (var controller in Utilities.GetPlayers())
+        {
+            if (IsHumanPlayer(controller)
+                && controller.Team is CsTeam.Terrorist or CsTeam.CounterTerrorist)
+            {
+                result.Add(controller);
+            }
+        }
+        return result;
+    }
+
+    public static (int T, int Ct) GetTeamCounts()
+    {
+        int t = 0, ct = 0;
+        foreach (var controller in GetTeamPlayers())
+        {
+            if (controller.Team == CsTeam.Terrorist) t++;
+            else ct++;
+        }
+        return (t, ct);
+    }
+
+    /// <summary>Builds an immutable view of both teams for balance planning.</summary>
+    public static List<PlayerSnapshot> Snapshot()
+    {
+        var result = new List<PlayerSnapshot>();
+        string mode = _config.Balancing.BalanceMode;
+
+        foreach (var controller in GetTeamPlayers())
+        {
+            var data = GetOrAdd(controller);
+            data.Stats.Score = controller.Score;
+
+            bool exempt = _config.Admin.ExcludeAdmins
+                && AdminManager.PlayerHasPermissions(controller, _config.Admin.AdminExemptFlag);
+            data.IsExemptFromSwitching = exempt;
+
+            bool movable = !exempt
+                && !data.IsImmune(_config.TeamSwitch.SwitchImmunityTime)
+                && data.RoundsOnCurrentTeam >= _config.TeamSwitch.MinRoundsBeforeSwitch;
+
+            result.Add(new PlayerSnapshot(
+                controller.SteamID,
+                controller.PlayerName,
+                controller.Team,
+                BalanceManager.GetRating(data.Stats, mode),
+                controller.PawnIsAlive,
+                exempt,
+                movable,
+                data.RoundsOnCurrentTeam));
+        }
+
+        return result;
+    }
+
+    public static void ResetAllStats()
+    {
+        foreach (var data in _players.Values)
+            data.Stats.Reset();
+    }
+
+    public static void Clear() => _players.Clear();
 }

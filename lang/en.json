@@ -1,37 +1,42 @@
 {
-    "jointeam.imbalance": "{0} You {red}cannot join that team{default} as it would cause team imbalance.",
-    "jointeam.suggest": "{0} Try joining the {green}{1}{default} team to maintain balance.",
-    "jointeam.forced": "{0} You have been moved to the {green}{1}{default} team to maintain balance.",
-    "jointeam.delayed": "{0} You will be moved to a balanced team {purple}when you die{default}.",
+    "jointeam.imbalance": "{0} You {red}cannot join that team{default} right now, it would make the teams uneven.",
     "jointeam.already_balanced": "{0} You are already on the {green}correct team{default} for balance.",
-    
-    "balance.scramble.winstreak": "{0} Teams will be {gold}scrambled{default} after {green}{1}{default} won {lightred}{2}{default} rounds in a row!",
-    "balance.boost.losestreak": "{0} {red}{1}{default} team has lost {lightred}{2}{default} rounds in a row. {green}Balance will assign better players to them{default} in the next round.",
-    "balance.boost.applying": "{0} {gold}Applying boost{default} to {red}{1}{default} team (lost {lightred}{2}{default} rounds) - {green}{3}%{default} skill advantage.",
-    "balance.size.moved": "{0} Moved {green}{1}{default} player{2} to maintain team size balance.",
-    "balance.size.moved.reason": "{0} Moved {green}{1}{default} player{2} to balance team sizes ({orange}T:{3} vs CT:{4}{default}).",
-    "balance.skill.swapped": "{0} Swapped {green}{1}{default} player pair{2} to balance team skill levels.",
-    "balance.skill.swapped.reason": "{0} Swapped {green}{1}{default} player pair{2} to balance {orange}{3}{default} skills (difference: {lightred}{4}{default}).",
-    "balance.force": "{0} {red}Critical team imbalance detected{default}. Forced {green}{1}{default} players to switch teams.",
-    
-    "scramble.random": "{0} Teams have been {gold}randomly scrambled{default} for better balance!",
-    "scramble.skill": "{0} Teams have been {gold}scrambled based on skill{default} for better balance!",
-    
-    "player.moved.t": "{0} You have been moved to the {orange}Terrorist{default} team to maintain balance.",
-    "player.moved.ct": "{0} You have been moved to the {blue}Counter-Terrorist{default} team to maintain balance.",
-    "player.moved.t.reason": "{0} You have been moved to the {orange}Terrorist{default} team to {green}{1}{default}.",
-    "player.moved.ct.reason": "{0} You have been moved to the {blue}Counter-Terrorist{default} team to {green}{1}{default}.",
-    
-    "stats.header": "{0} {gold}=== Your Statistics ==={default}",
-    "stats.kd": "{0} K/D Ratio: {green}{1}{default}",
+    "jointeam.forced.t": "{0} You have been placed on the {orange}Terrorist{default} team to keep the teams even.",
+    "jointeam.forced.ct": "{0} You have been placed on the {blue}Counter-Terrorist{default} team to keep the teams even.",
+
+    "player.moved.t": "{0} You have been moved to the {orange}Terrorist{default} team to keep the teams balanced.",
+    "player.moved.ct": "{0} You have been moved to the {blue}Counter-Terrorist{default} team to keep the teams balanced.",
+
+    "balance.size.moved": "{0} Moved {green}{1}{default} player(s) to even out the teams.",
+    "balance.size.moved.reason": "{0} Moved {green}{1}{default} player(s) to even out the teams ({orange}T {2}{default} vs {blue}CT {3}{default}).",
+    "balance.skill.swapped": "{0} Swapped {green}{1}{default} player pair(s) to balance team skill.",
+    "balance.skill.swapped.reason": "{0} Swapped {green}{1}{default} player pair(s) to balance {orange}{2}{default} (remaining gap: {lightred}{3}{default}).",
+
+    "balance.boost.losestreak.t": "{0} The {orange}Terrorists{default} lost {lightred}{1}{default} rounds in a row. The next balance will favor them.",
+    "balance.boost.losestreak.ct": "{0} The {blue}Counter-Terrorists{default} lost {lightred}{1}{default} rounds in a row. The next balance will favor them.",
+
+    "scramble.queued": "{0} Teams will be {gold}scrambled{default} at the start of the next round.",
+    "scramble.winstreak.t": "{0} The {orange}Terrorists{default} won {lightred}{1}{default} rounds in a row. Teams will be {gold}scrambled{default} next round!",
+    "scramble.winstreak.ct": "{0} The {blue}Counter-Terrorists{default} won {lightred}{1}{default} rounds in a row. Teams will be {gold}scrambled{default} next round!",
+    "scramble.halftime": "{0} Halftime! Teams will be {gold}scrambled{default} next round.",
+    "scramble.random": "{0} Teams have been {gold}randomly scrambled{default}.",
+    "scramble.skill": "{0} Teams have been {gold}scrambled by skill{default}.",
+    "scramble.already_queued": "{0} A scramble is {gold}already queued{default} for the next round.",
+
+    "stats.header": "{0} {gold}=== Your Balance Statistics ==={default}",
+    "stats.kd": "{0} K/D ratio: {green}{1}{default}",
     "stats.kda": "{0} KDA: {green}{1}{default}",
     "stats.score": "{0} Score: {green}{1}{default}",
-    "stats.winrate": "{0} Win Rate: {green}{1}%{default}",
-    "stats.rounds": "{0} Rounds Played: {green}{1}{default}",
-    "stats.switches": "{0} Times Switched: {green}{1}{default}",
-    
+    "stats.winrate": "{0} Win rate: {green}{1}%{default}",
+    "stats.rounds": "{0} Rounds played: {green}{1}{default}",
+    "stats.switches": "{0} Times switched: {green}{1}{default}",
+
     "preview.header": "{0} {gold}=== Balance Preview ==={default}",
-    "preview.current": "{0} Current: T={orange}{1}{default} (avg: {2}) vs CT={blue}{3}{default} (avg: {4})",
-    "preview.proposed": "{0} After balance: T={orange}{1}{default} vs CT={blue}{2}{default}",
-    "preview.moves": "{0} Would move {green}{1}{default} player(s), swap {green}{2}{default} pair(s)."
+    "preview.current": "{0} Current: {orange}T {1}{default} (avg {2}) vs {blue}CT {3}{default} (avg {4})",
+    "preview.move": "{0} - {green}{1}{default}: {2}",
+    "preview.moves": "{0} Planned: {green}{1}{default} size move(s), {green}{2}{default} skill swap(s).",
+    "preview.none": "{0} Teams are already balanced. No changes needed.",
+
+    "command.nopermission": "{0} You don't have permission to use this command.",
+    "admin.reset.done": "{0} Balance statistics and win streaks have been reset."
 }

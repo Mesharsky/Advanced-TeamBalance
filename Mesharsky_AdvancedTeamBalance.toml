@@ -1,115 +1,123 @@
-# Advanced Team Balance Plugin Configuration
-# Version v5.2.0 - Beta Release
+# Advanced Team Balance - configuration
+# Version 6.0.0
+#
+# Place this file at:
+# addons/counterstrikesharp/configs/plugins/Mesharsky_AdvancedTeamBalance/Mesharsky_AdvancedTeamBalance.toml
 
 # ======================================
-# General Plugin Settings
+# General
 # ======================================
 [General]
-# Tag appears in chat messages
+# Tag shown in front of chat messages. Supports color tags.
 PluginTag = "{red}[TeamBalance]{default}"
 
-# Minimum number of players required for balancing to activate
-MinimumPlayers = 4
+# Minimum players on teams before skill balancing activates.
+# Team size limits are still enforced below this (see AlwaysEnforceTeamSizes).
+MinimumPlayers = 6
 
-# Enable debug logging for troubleshooting
+# Verbose logging for troubleshooting.
 EnableDebug = false
 
 # ======================================
-# Team Switching Settings
+# Team switching
 # ======================================
 [TeamSwitch]
-# When balancing should happen (select multiple if needed)
-# Available options:
-#   - "OnRoundStart": Balance at the start of each round
-#   - "OnPlayerJoin": Balance when a player joins
-#   - "OnPlayerDisconnect": Balance when a player leaves
-BalanceTriggers = ["OnRoundStart"]
+# When balancing runs.
+#   "OnRoundStart" / "OnRoundEnd" - full balance at the next round start
+#   "OnPlayerJoin"                - enforce team sizes when a player connects
+#   "OnPlayerDisconnect"          - enforce team sizes when a player leaves
+# Mid-round enforcement only ever moves dead players.
+BalanceTriggers = ["OnRoundStart", "OnPlayerJoin"]
 
-# Maximum allowed difference in team sizes
-# This is always enforced with highest priority
-# Example: If set to 1, one team may have at most 1 more player than the other
+# Maximum allowed difference in team sizes. Highest priority rule.
 MaxTeamSizeDifference = 1
 
-# Minimum rounds a player must stay on their team before being eligible for switching
+# Enforce the size limit even when below MinimumPlayers.
+AlwaysEnforceTeamSizes = true
+
+# Rounds a player must stay on a team before qualifying for a switch.
 MinRoundsBeforeSwitch = 2
 
-# Seconds of immunity after being switched (prevents ping-ponging players between teams)
+# Seconds of immunity after the plugin switches a player.
 SwitchImmunityTime = 60
 
-# Whether to balance teams during warmup
+# Maximum player pairs swapped for skill in one balance pass.
+MaxSkillSwapsPerRound = 2
+
+# Balance during warmup.
 BalanceDuringWarmup = false
 
 # ======================================
-# Team Balancing Method
+# Balancing method
 # ======================================
 [Balancing]
-# How to balance teams - Choose ONE method:
-#   - "KD": Balance based on kill/death ratio
-#   - "KDA": Balance based on kill/death/assist ratio
-#   - "Score": Balance based on in-game score
-#   - "WinRate": Balance based on round win percentage
-#   - "ScrambleRandom": Completely randomize teams
-#   - "ScrambleSkill": Distribute players evenly by skill
+# Rating used for balancing. One of:
+#   "KD"      - kill/death ratio
+#   "KDA"     - kill/death ratio including assists
+#   "Score"   - in-game scoreboard score
+#   "WinRate" - fraction of rounds won
 BalanceMode = "KDA"
 
-# How large a skill difference must be to trigger balancing (0.0 to 1.0, where 0.2 = 20%)
-# Lower values = more frequent balancing
-SkillDifferenceThreshold = 0.3
+# Relative strength difference that triggers skill swaps.
+# 0.2 means teams may differ by up to 20 percent before the plugin steps in.
+SkillDifferenceThreshold = 0.2
 
-# Whether to reset player statistics after a scramble
-ResetStatsAfterScramble = true
-
-# Number of consecutive rounds one team must win to trigger auto-scramble
-# Set to 0 to disable auto-scramble
-AutoScrambleAfterWinStreak = 0
-
-# Number of consecutive rounds one team must lose to trigger skill boosting
-# Set to 0 to disable boosting
-BoostAfterLoseStreak = 5
-
-# Percentage to boost the losing team's skill threshold by when balancing
-# Higher values give the losing team higher skilled players when balancing
-BoostPercentage = 30
-
-# Enable progressive boost system where boost increases with longer losing streaks
-ProgressiveBoost = false
-
-# If true, balancing logic will only consider team sizes and skip all other algorithms (KD, KDA, Score, etc.).
-# MaxTeamSizeDifference will still be respected.
+# Only enforce team sizes, never swap for skill.
 OnlyBalanceByTeamSize = false
 
-# Enable balance history logging to file (logs/balance_history_YYYY-MM-DD.log)
-EnableBalanceHistory = false
+# Consecutive lost rounds before the losing team gets a boost. 0 disables.
+BoostAfterLoseStreak = 5
 
-# Show boost notification when actually applied (not just when triggered)
-ShowBoostOnApplication = true
+# How much stronger (percent) the losing team is allowed to end up.
+BoostPercentage = 20
 
-# Progressive boost tiers: rounds lost = boost percentage
-# Example below: 3 rounds = 10% boost, 5 rounds = 20% boost, 7 rounds = 30% boost
+# Scale the boost with the length of the losing streak using the tiers below.
+ProgressiveBoost = false
+
+# Losing streak length = boost percentage.
 [Balancing.BoostTiers]
 3 = 10
 5 = 20
 7 = 30
 
 # ======================================
-# Chat Message Settings
+# Scramble
+# ======================================
+[Scramble]
+# "Random" shuffles teams, "Skill" deals players out evenly by rating.
+Mode = "Random"
+
+# Scramble after one team wins this many rounds in a row. 0 disables.
+AfterWinStreak = 5
+
+# Scramble at halftime.
+AfterHalftime = false
+
+# Reset player statistics after a scramble.
+ResetStats = true
+
+# ======================================
+# Chat messages
 # ======================================
 [Messages]
-# Whether to announce team balancing events in chat
+# Announce balance operations in chat.
 AnnounceBalancing = true
 
-# Whether to send private messages to players who are switched
+# Tell switched players they were moved.
 NotifySwitchedPlayers = true
 
-# Whether to explain the reason for the balance
+# Include the reason (metric, streaks, team sizes) in announcements.
 ExplainBalanceReason = true
 
 # ======================================
-# Admin Settings
+# Admin
 # ======================================
 [Admin]
-# Whether to exclude admins from automatic team switches
-ExcludeAdmins = false
+# Exclude admins from automatic switches.
+ExcludeAdmins = true
 
-# Admin flag that grants exemption from team switching
+# Flag that grants exemption from automatic switches.
 AdminExemptFlag = "@css/ban"
+
+# Flag required for the plugin's admin commands (css_scramble, css_balancepreview, css_tbreset).
+AdminCommandFlag = "@css/generic"
